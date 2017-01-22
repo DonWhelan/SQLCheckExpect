@@ -6,5 +6,7 @@
     while ($row = mysql_fetch_assoc($result)) {
         echo $row['value'] . "<br>";
     }
+    
+    
         
 ?>

@@ -1,26 +1,29 @@
 <?php
 
     /* --------------- This file containes the connection details to SQL server ----------------------------
-     * the login details to the DB are defined and a connection is establised
      * We create a escape_data() function that scrubs user input of unwanted characters
      * We also have a get_client_ip_env() function that returns the clients IP address
      * -----------------------------------------------------------------------------------------------------
      */
     
-    /* 
-     *  DB details are defined as constants rather than variables, to stop values from being altered.
-     */
-    function connection(){
+    // DB details are defined as constants rather than variables, to stop values from being altered.
+     
+    function connectionCredentials(){
         define("HOST", "dublinscoffee.ie");
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
-         
-        /*
-         * mysql_query() was chosen over the other connection functions as it only allows one query to be sent to the DB
-         * if a second query was introduced via SLQ injection the second query would not exacute 
-         */
-        
+    }
+    
+    function selectConnectionCredentials(){
+        define("HOST", "dublinscoffee.ie");
+        define("USER", "dubli653_dib");
+        define("PASS", "0u.ipTVc)zpq");
+        define("DB", "dubli653_ncirl");
+    }
+    
+    function connectionString(){
+        //mysql_query() only allows one query to be sent to the DB, and not mutible
         $connection = mysql_connect(HOST, USER, PASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
@@ -32,7 +35,7 @@
             trigger_error("Could not reach database!<br/>");
             include("logs/logsMail-1dir.php");
             exit();
-        }
+        }    
     }
     
     /*
@@ -78,15 +81,13 @@
             $ipaddress = getenv('REMOTE_ADDR');
         else
             $ipaddress = 'UNKNOWN';
-     
         return $ipaddress;
     }
     
-    
-    
-    function select_query($query) {
-        connection();
-        $result = mysql_query($query); 
+    function select_query($select_query) {
+        selectConnectionCredentials();
+        connectionString();
+        $result = mysql_query($select_query); 
         if (! $result){
             echo('Database error: ' . mysql_error());
             exit;
@@ -95,7 +96,8 @@
     }
     
     function select_queryE($select_query,$expectedResult) {
-        connection();
+        selectConnectionCredentials();
+        connectionString();
         $result = mysql_query($select_query); 
         $numRows = mysql_num_rows($result); 
         if (! $result){
@@ -103,10 +105,8 @@
             exit;
         }        
         if($numRows != $expectedResult){
-            //logs a security file
             include("logs/logsMail.php");
             return $result;
-            //closed the sql connection
             mysql_close($connection);
             exit;
         }   
