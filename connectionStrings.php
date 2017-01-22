@@ -8,6 +8,8 @@
     
     // DB details are defined as constants rather than variables, to stop values from being altered.
      
+    $multibleCredentials = false;
+    
     function connectionCredentials(){
         define("HOST", "dublinscoffee.ie");
         define("USER", "dubli653_dib");
@@ -63,7 +65,6 @@
         return $dataFromForms;
     }
     
-    
     //gets client IP - ref: https://www.virendrachandak.com/techtalk/getting-real-client-ip-address-in-php-2/
     function get_client_ip_env() {
         $ipaddress = '';
@@ -85,7 +86,11 @@
     }
     
     function select_query($select_query) {
-        selectConnectionCredentials();
+        if($multibleCredentials){
+            selectConnectionCredentials();
+        }else{
+            connectionCredentials();
+        }    
         connectionString();
         $result = mysql_query($select_query); 
         if (! $result){
@@ -96,7 +101,11 @@
     }
     
     function select_queryE($select_query,$expectedResult) {
-        selectConnectionCredentials();
+        if($multibleCredentials){
+            selectConnectionCredentials();
+        }else{
+            connectionCredentials();
+        } 
         connectionString();
         $result = mysql_query($select_query); 
         $numRows = mysql_num_rows($result); 
