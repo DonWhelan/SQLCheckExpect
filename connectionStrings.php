@@ -24,8 +24,16 @@
         define("DB", "dubli653_ncirl");
     }
     
+    function insertConnectionCredentials(){
+        define("HOST", "dublinscoffee.ie");
+        define("USER", "dubli653_dib");
+        define("PASS", "0u.ipTVc)zpq");
+        define("DB", "dubli653_ncirl");
+    }
+    
     function connectionString(){
         //mysql_query() only allows one query to be sent to the DB, and not mutible
+        global $connection;
         $connection = mysql_connect(HOST, USER, PASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
@@ -55,7 +63,7 @@
      
     function escape_data($dataFromForms) {
         if (function_exists('mysql_real_escape_string')) {
-            global $connection;
+            //global $connection;
             $dataFromForms = mysql_real_escape_string (trim($dataFromForms), $connection);
             $dataFromForms = strip_tags($dataFromForms);
         } else {
@@ -120,6 +128,61 @@
             exit;
         }   
         return $result;
+    }
+
+    function insert_query($insert_query) {
+        if($multibleCredentials){
+            insertConnectionCredentials();
+        }else{
+            connectionCredentials();
+        } 
+        connectionString();
+        $conn = new mysqli(HOST, USER, PASS, DB);
+        if ($conn->query($insert_query) === TRUE) {
+            echo "New record created successfully <br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
+        $conn->close();
+    }
+    
+    function insert_queryE($insert_query, $table, $expectedResult) {
+        if($multibleCredentials){
+            insertConnectionCredentials();
+        }else{
+            connectionCredentials();
+        } 
+        connectionString();
+        
+        $sql = "Select * FROM $table";
+        $result = mysql_query($sql); 
+        $rowsBefore = mysql_num_rows($result);
+        
+        $conn = new mysqli(HOST, USER, PASS, DB);
+        if ($conn->query($insert_query) === TRUE) {
+            echo "New record created successfully <br>";
+        } else {
+            echo "Error: " . $sql . "<br>" . $conn->error;
+        }
+        $conn->close();
+        
+        //check to see what the count of rows is after the write to DB
+        $sql = "Select * FROM $table";
+        $result = mysql_query($sql); 
+        $rowsAfter = mysql_num_rows($result);
+        
+        /*
+         * if anything other than $expectedResult rows being added happens 
+         * we close the connection, log a security incedent and email alert the admin
+         */
+         
+        if($rowsBefore != $rowsAfter-$expectedResult){
+            include("logs/logsMail.php");
+            mysql_close($connection);
+            exit();
+        }
+        //mysql_close($connection);
+       // echo "rowsBefore: " . $rowsBefore . "<br>" . "rowsAfter: " . $rowsAfter . "<br>" ;
     }
     
 ?>
