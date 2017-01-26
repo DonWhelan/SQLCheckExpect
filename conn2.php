@@ -7,14 +7,14 @@
      */
     
     // DB details are defined as constants rather than variables, to stop values from being altered.
-     
-    $multibleCredentials = false;
+
     
     function connectionCredentials(){
-        define("HOST", "dublinscoffee.ie");
+        define("HOST", "dublinscoffee.iess");
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
+        echo "a";
     }
     
     function selectConnectionCredentials(){
@@ -22,6 +22,7 @@
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
+        echo "b";
     }
     
     function insertConnectionCredentials(){
@@ -29,23 +30,25 @@
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
+        echo "c";
     }
     
     function connectionString(){
         //mysql_query() only allows one query to be sent to the DB, and not mutible
-        global $connection;
-        $connection = mysql_connect(HOST, USER, PASS);
+        //global $connection;
+        $connection = mysqli_connect(HOST, USER, PASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
             include("logs/logsMail-1dir.php");
             exit();
         }
-        $db_selected = mysql_select_db(DB,$connection);
+        $db_selected = mysqli_select_db($connection, DB);
         if (!$db_selected) {
             trigger_error("Could not reach database!<br/>");
             include("logs/logsMail-1dir.php");
             exit();
-        }    
+        } 
+        return $connection;
     }
     
     /*
@@ -64,10 +67,10 @@
     function escape_data($dataFromForms) {
         if (function_exists('mysql_real_escape_string')) {
             //global $connection;
-            $dataFromForms = mysql_real_escape_string (trim($dataFromForms), $connection);
+            $dataFromForms = mysqli_real_escape_string (trim($dataFromForms), $connection);
             $dataFromForms = strip_tags($dataFromForms);
         } else {
-            $dataFromForms = mysql_escape_string (trim($dataFromForms));
+            $dataFromForms = mysqli_escape_string (trim($dataFromForms));
             $dataFromForms = strip_tags($dataFromForms);
         }
         return $dataFromForms;
@@ -94,85 +97,60 @@
     }
     
     function select_query($select_query) {
-        if($multibleCredentials){
-            selectConnectionCredentials();
-        }else{
-            connectionCredentials();
-        }    
-        connectionString();
-        $result = mysql_query($select_query); 
-        $numRows = mysql_num_rows($result); 
+        selectConnectionCredentials();
+        $connection = connectionString();
+        $result = mysqli_query($connection, $select_query); 
+        $numRows = mysqli_num_rows($result); 
         if (! $result){
-            echo('Database error: ' . mysql_error());
+            echo('Database error: ' . mysqli_error());
             exit;
         }
-        echo "rows: " . $numRows . "<br>";
+        //echo "rows: " . $numRows . "<br>";
+        mysqli_close($connection);
         return $result;
     }
     
     function select_queryE($select_query,$expectedResult) {
-        if($multibleCredentials){
-            selectConnectionCredentials();
-        }else{
-            connectionCredentials();
-        } 
-        connectionString();
-        $result = mysql_query($select_query); 
-        $numRows = mysql_num_rows($result); 
+        selectConnectionCredentials();
+        $connection = connectionString();
+        $result = mysqli_query($connection, $select_query); 
+        $numRows = mysqli_num_rows($result); 
+        echo $numRows;
         if (! $result){
-            echo('Database error: ' . mysql_error());
+            echo('Database error: ' . mysqli_error());
             exit;
         }   
-        echo $numRows;
         if($numRows != $expectedResult){
             include("logs/logsMail.php");
-            return $result;
-            mysql_close($connection);
-            exit;
-        }   
+        } 
+        mysqli_close($connection);
         return $result;
     }
-
+    
     function insert_query($insert_query) {
-        if($multibleCredentials){
-            insertConnectionCredentials();
-        }else{
-            connectionCredentials();
-        } 
-        connectionString();
-        $conn = new mysqli(HOST, USER, PASS, DB);
-        if ($conn->query($insert_query) === TRUE) {
-            echo "New record created successfully <br>";
-        } else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
-        }
-        $conn->close();
+        insertConnectionCredentials();
+        //connectionString;
+        $connection = connectionString();
+        mysqli_query($connection, $insert_query) 
+        or die(mysqli_error($connection));
+        mysqli_close($connection);
+
     }
     
     function insert_queryE($insert_query, $table, $expectedResult) {
-        if($multibleCredentials){
-            insertConnectionCredentials();
-        }else{
-            connectionCredentials();
-        } 
-        connectionString();
-        
+        insertConnectionCredentials();
+        $connection = connectionString();
         $sql = "Select * FROM $table";
-        $result = mysql_query($sql); 
-        $rowsBefore = mysql_num_rows($result);
+        $result = mysqli_query($connection,$sql); 
+        $rowsBefore = mysqli_num_rows($result);
         
-        $conn = new mysqli(HOST, USER, PASS, DB);
-        if ($conn->query($insert_query) === TRUE) {
-            echo "New record created successfully <br>";
-        } else {
-            echo "Error: " . $sql . "<br>" . $conn->error;
-        }
-        $conn->close();
+        mysqli_query($connection, $insert_query) 
+        or die(mysqli_error($connection));
         
         //check to see what the count of rows is after the write to DB
         $sql = "Select * FROM $table";
-        $result = mysql_query($sql); 
-        $rowsAfter = mysql_num_rows($result);
+        $result = mysqli_query($connection,$sql); 
+        $rowsAfter = mysqli_num_rows($result);
         
         /*
          * if anything other than $expectedResult rows being added happens 
@@ -181,18 +159,26 @@
          
         if($rowsBefore != $rowsAfter-$expectedResult){
             include("logs/logsMail.php");
-            mysql_close($connection);
-            exit();
         }
-       // mysql_close($connection);
+        mysqli_close($connection);
        // echo var_dump($connection);
-       // echo "rowsBefore: " . $rowsBefore . "<br>" . "rowsAfter: " . $rowsAfter . "<br>" ;
+       echo "rowsBefore: " . $rowsBefore . "<br>" . "rowsAfter: " . $rowsAfter . "<br>" ;
     }
     
     
-    $result = select_query("SELECT * FROM testtable");
-    while ($row = mysql_fetch_assoc($result)) {
+    $result = select_queryE("SELECT * FROM testtable",4);
+    while ($row = mysqli_fetch_assoc($result)) {
         echo $row['key'] . "<br>";
     }
+    
+    $result = select_query("SELECT * FROM testtable");
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo $row['key'] . "<br>";
+    }
+
+    insert_query("INSERT INTO testtable (value) VALUES ('104')");
+    insert_queryE("INSERT INTO testtable (value) VALUES ('2222')","testtable",1);
+    
+    
     
 ?>
