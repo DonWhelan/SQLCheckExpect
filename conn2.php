@@ -33,13 +33,21 @@
         //echo "c";
     }
     
-    function updatetConnectionCredentials(){
+    function updateConnectionCredentials(){
         define("HOST", "dublinscoffee.ie");
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
         //echo "d";
-    }    
+    }  
+    
+    function deleteConnectionCredentials(){
+        define("HOST", "dublinscoffee.ie");
+        define("USER", "dubli653_dib");
+        define("PASS", "0u.ipTVc)zpq");
+        define("DB", "dubli653_ncirl");
+        //echo "e";
+    }
     
     function connectionString(){
         //mysqli_query() only allows one query to be sent to the DB, and not mutible.
@@ -180,7 +188,7 @@
     }
     
     function update_query($update_query){
-        insertConnectionCredentials();
+        updateConnectionCredentials();
         $connection = connectionString();
         mysqli_query($connection, $update_query)
         or die(mysqli_error($connection));
@@ -188,7 +196,7 @@
     }
     
     function update_queryE($update_query, $table, $expectedResult){
-        insertConnectionCredentials();
+        updateConnectionCredentials();
         $connection = connectionString();
         mysqli_query($connection,"start transaction");         
         
@@ -217,6 +225,47 @@
         mysqli_close($connection);
     }
     
+    function delete_query($delete_query){
+        deleteConnectionCredentials();
+        $connection = connectionString();
+        mysqli_query($connection, $delete_query)
+        or die(mysqli_error($connection));
+        mysqli_close($connection);
+    }
+    
+    function delete_queryE($delete_query, $table, $expectedResult){
+        updateConnectionCredentials();
+        $connection = connectionString();
+        mysqli_query($connection,"start transaction");         
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsBefore = mysqli_num_rows($result);
+        
+        mysqli_query($connection, $delete_query) 
+        or die(mysqli_error($connection));
+        $affectedRows = mysqli_affected_rows($connection);
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsAfter = mysqli_num_rows($result);
+        
+        if(($rowsBefore != ($rowsAfter + $expectedResult)) || ($affectedRows != $expectedResult)){
+            if($affectedRows != 0){
+                echo "wrong rollback";
+                include("logs/logsMail.php");
+                mysqli_query($connection,"rollback");
+            }else{
+                mysqli_query($connection,"commit");
+                echo "wrong commited";
+            }    
+        }else{
+            mysqli_query($connection,"commit");
+            echo "correct commited";
+        }
+        mysqli_close($connection);
+    }
+    
     /* SELECT */
     // $result = select_query("SELECT * FROM testtable where value=101");
     // while ($row = mysqli_fetch_assoc($result)) {
@@ -240,6 +289,12 @@
     
     /* UPDATE EXACT*/
     //update_queryE("UPDATE testtable SET value=104 WHERE value=105","testtable",1);
+    
+    /* DELETE */
+    //delete_query("DELETE FROM testtable WHERE value=104");
+    
+    /* DELETE EXACT*/
+    //delete_queryE("DELETE FROM testtable WHERE value=104","testtable",1);    
     
     
     
