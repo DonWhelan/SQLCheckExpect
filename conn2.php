@@ -14,7 +14,7 @@
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
-        echo "a";
+        //echo "a";
     }
     
     function selectConnectionCredentials(){
@@ -22,7 +22,7 @@
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
-        echo "b";
+        //echo "b";
     }
     
     function insertConnectionCredentials(){
@@ -30,7 +30,7 @@
         define("USER", "dubli653_dib");
         define("PASS", "0u.ipTVc)zpq");
         define("DB", "dubli653_ncirl");
-        echo "c";
+        //echo "c";
     }
     
     function connectionString(){
@@ -113,8 +113,10 @@
     function select_queryE($select_query,$expectedResult) {
         selectConnectionCredentials();
         $connection = connectionString();
+        mysqli_autocommit($connection,FALSE);
+        mysqli_query($connection,"start transaction");
         $result = mysqli_query($connection, $select_query); 
-        $numRows = mysqli_num_rows($result); 
+        $numRows = mysqli_affected_rows($connection);
         echo $numRows;
         if (! $result){
             echo('Database error: ' . mysqli_error());
@@ -122,7 +124,10 @@
         }   
         if($numRows != $expectedResult){
             include("logs/logsMail.php");
-        } 
+            mysqli_query($connection,"rollback");
+        }else{
+            mysqli_query($connection,"commit");
+        }
         mysqli_close($connection);
         return $result;
     }
@@ -140,45 +145,53 @@
     function insert_queryE($insert_query, $table, $expectedResult) {
         insertConnectionCredentials();
         $connection = connectionString();
+        mysqli_autocommit($connection,FALSE);
+        mysqli_query($connection,"start transaction"); 
+        
         $sql = "Select * FROM $table";
         $result = mysqli_query($connection,$sql); 
         $rowsBefore = mysqli_num_rows($result);
         
         mysqli_query($connection, $insert_query) 
         or die(mysqli_error($connection));
+        $affectedRows = mysqli_affected_rows($connection);
         
-        //check to see what the count of rows is after the write to DB
         $sql = "Select * FROM $table";
         $result = mysqli_query($connection,$sql); 
         $rowsAfter = mysqli_num_rows($result);
-        
+
         /*
          * if anything other than $expectedResult rows being added happens 
-         * we close the connection, log a security incedent and email alert the admin
+         * we log a security incedent and email alert the admin, and rollback the previous transaction
          */
          
-        if($rowsBefore != $rowsAfter-$expectedResult){
+        if($rowsBefore != ($rowsAfter-$expectedResult) && $affectedRows != $expectedResult){
             include("logs/logsMail.php");
+            mysqli_query($connection,"rollback");
+        }else{
+            mysqli_query($connection,"commit");
         }
         mysqli_close($connection);
-       // echo var_dump($connection);
-       echo "rowsBefore: " . $rowsBefore . "<br>" . "rowsAfter: " . $rowsAfter . "<br>" ;
     }
     
     
-    $result = select_queryE("SELECT * FROM testtable",4);
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo $row['key'] . "<br>";
-    }
+
+    /* SELECT */
+    // $result = select_query("SELECT * FROM testtable WHERE value = 2222");
+    // while ($row = mysqli_fetch_assoc($result)) {
+    //     echo $row['key'] . "<br>";
+    // }
     
-    $result = select_query("SELECT * FROM testtable");
+    /* SELECT EXACT */
+    $result = select_queryE("SELECT * FROM testtable",5);
     while ($row = mysqli_fetch_assoc($result)) {
         echo $row['key'] . "<br>";
     }
 
-    insert_query("INSERT INTO testtable (value) VALUES ('104')");
-    insert_queryE("INSERT INTO testtable (value) VALUES ('2222')","testtable",1);
+    /* INSERT */
+    //insert_query("INSERT INTO testtable (value) VALUES ('104')");
     
-    
-    
+    /* INSERT Exact */
+    //insert_queryE("INSERT INTO testtable (value) VALUES ('104')","testtable",1);
+
 ?>
