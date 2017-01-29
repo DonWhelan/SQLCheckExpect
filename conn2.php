@@ -33,9 +33,16 @@
         //echo "c";
     }
     
+    function updatetConnectionCredentials(){
+        define("HOST", "dublinscoffee.ie");
+        define("USER", "dubli653_dib");
+        define("PASS", "0u.ipTVc)zpq");
+        define("DB", "dubli653_ncirl");
+        //echo "d";
+    }    
+    
     function connectionString(){
-        //mysql_query() only allows one query to be sent to the DB, and not mutible
-        //global $connection;
+        //mysqli_query() only allows one query to be sent to the DB, and not mutible.
         $connection = mysqli_connect(HOST, USER, PASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
@@ -100,7 +107,6 @@
         selectConnectionCredentials();
         $connection = connectionString();
         $result = mysqli_query($connection, $select_query); 
-        $numRows = mysqli_num_rows($result); 
         if (! $result){
             echo('Database error: ' . mysqli_error());
             exit;
@@ -134,7 +140,6 @@
     
     function insert_query($insert_query) {
         insertConnectionCredentials();
-        //connectionString;
         $connection = connectionString();
         mysqli_query($connection, $insert_query) 
         or die(mysqli_error($connection));
@@ -165,7 +170,7 @@
          * we log a security incedent and email alert the admin, and rollback the previous transaction
          */
          
-        if($rowsBefore != ($rowsAfter-$expectedResult) && $affectedRows != $expectedResult){
+        if($rowsBefore != ($rowsAfter-$expectedResult) || $affectedRows != $expectedResult){
             include("logs/logsMail.php");
             mysqli_query($connection,"rollback");
         }else{
@@ -174,19 +179,55 @@
         mysqli_close($connection);
     }
     
+    function update_query($update_query){
+        insertConnectionCredentials();
+        $connection = connectionString();
+        mysqli_query($connection, $update_query)
+        or die(mysqli_error($connection));
+        mysqli_close($connection);
+    }
     
-
+    function update_queryE($update_query, $table, $expectedResult){
+        insertConnectionCredentials();
+        $connection = connectionString();
+        mysqli_query($connection,"start transaction");         
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsBefore = mysqli_num_rows($result);
+        
+        mysqli_query($connection, $update_query) 
+        or die(mysqli_error($connection));
+        $affectedRows = mysqli_affected_rows($connection);
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsAfter = mysqli_num_rows($result);
+        
+        if(($rowsBefore != $rowsAfter) || ($affectedRows != $expectedResult)){
+            if($affectedRows != 0){
+                include("logs/logsMail.php");
+                mysqli_query($connection,"rollback");
+            }else{
+                mysqli_query($connection,"commit");
+            }    
+        }else{
+            mysqli_query($connection,"commit");
+        }
+        mysqli_close($connection);
+    }
+    
     /* SELECT */
-    // $result = select_query("SELECT * FROM testtable WHERE value = 2222");
+    // $result = select_query("SELECT * FROM testtable where value=101");
     // while ($row = mysqli_fetch_assoc($result)) {
-    //     echo $row['key'] . "<br>";
+    //     echo "key = " . $row['key'] . "<br>";
     // }
     
     /* SELECT EXACT */
-    $result = select_queryE("SELECT * FROM testtable",5);
-    while ($row = mysqli_fetch_assoc($result)) {
-        echo $row['key'] . "<br>";
-    }
+    // $result = select_queryE("SELECT * FROM testtable where value=101", 1);
+    // while ($row = mysqli_fetch_assoc($result)) {
+    //     echo $row['key'] . "<br>";
+    // }
 
     /* INSERT */
     //insert_query("INSERT INTO testtable (value) VALUES ('104')");
@@ -194,4 +235,14 @@
     /* INSERT Exact */
     //insert_queryE("INSERT INTO testtable (value) VALUES ('104')","testtable",1);
 
+    /* UPDATE */
+    //update_query("UPDATE testtable SET value=105 WHERE value=104");
+    
+    /* UPDATE EXACT*/
+    //update_queryE("UPDATE testtable SET value=104 WHERE value=105","testtable",1);
+    
+    
+    
+    
+    
 ?>

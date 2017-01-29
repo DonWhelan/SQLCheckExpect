@@ -1,4 +1,4 @@
-<br><b>Date:</b> 2017-01-29-12:08:47<br>
+<br><b>Date:</b> 2017-01-29-20:11:02<br>
 <b>PHP_SELF:</b> /conn2.php<br>
 <b>argv:</b> <br>
 <b>argc:</b> <br>
@@ -8,8 +8,8 @@
 <b>SERVER_SOFTWARE:</b> Apache/2.4.7 (Ubuntu)<br>
 <b>SERVER_PROTOCOL:</b> HTTP/1.1<br>
 <b>REQUEST_METHOD:</b> GET<br>
-<b>REQUEST_TIME: </b>1485691727<br>
-<b>REQUEST_TIME_FLOAT:</b> 1485691727.155<br>
+<b>REQUEST_TIME: </b>1485720661<br>
+<b>REQUEST_TIME_FLOAT:</b> 1485720661.635<br>
 <b>QUERY_STRING:</b> <br>
 <b>DOCUMENT_ROOT:</b> /home/ubuntu/workspace<br>
 <b>HTTP_ACCEPT:</b> text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8<br>
@@ -21,9 +21,9 @@
 <b>HTTP_REFERER:</b> <br>
 <b>HTTP_USER_AGENT:</b> Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36<br>
 <b>HTTPS:</b> <br>
-<b>REMOTE_ADDR:</b> 10.240.0.225<br>
+<b>REMOTE_ADDR:</b> 10.240.0.224<br>
 <b>REMOTE_HOST:</b> <br>
-<b>REMOTE_PORT:</b> 50380<br>
+<b>REMOTE_PORT:</b> 49998<br>
 <b>REMOTE_USER:</b> <br>
 <b>REDIRECT_REMOTE_USER:</b> <br>
 <b>SCRIPT_FILENAME:</b> /home/ubuntu/workspace/conn2.php<br>
