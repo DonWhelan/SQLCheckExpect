@@ -8,47 +8,19 @@
     
     // DB details are defined as constants rather than variables, to stop values from being altered.
     
-    function selectConnectionCredentials(){
-        define("HOST", "dublinscoffee.ie");
-        define("USER", "dubli653_dib");
-        define("PASS", "0u.ipTVc)zpq");
-        define("DB", "dubli653_ncirl");
-        //echo "b";
-    }
-    
-    function insertConnectionCredentials(){
-        define("HOST", "dublinscoffee.ie");
-        define("USER", "dubli653_dib");
-        define("PASS", "0u.ipTVc)zpq");
-        define("DB", "dubli653_ncirl");
-        //echo "c";
-    }
-    
-    function updateConnectionCredentials(){
-        define("HOST", "dublinscoffee.ie");
-        define("USER", "dubli653_dib");
-        define("PASS", "0u.ipTVc)zpq");
-        define("DB", "dubli653_ncirl");
-        //echo "d";
-    }  
-    
-    function deleteConnectionCredentials(){
-        define("HOST", "dublinscoffee.ie");
-        define("USER", "dubli653_dib");
-        define("PASS", "0u.ipTVc)zpq");
-        define("DB", "dubli653_ncirl");
-        //echo "e";
-    }
-    
-    function connectionString(){
-        //mysqli_query() only allows one query to be sent to the DB, and not mutible.
-        $connection = mysqli_connect(HOST, USER, PASS);
+    function selectConnectionString(){
+        //Permission to SELECT and LOCK
+        define("sHOST", "dublinscoffee.ie");
+        define("sUSER", "dubli653_SELECT");
+        define("sPASS", "Password1");
+        define("sDB", "dubli653_ncirl");
+        $connection = mysqli_connect(sHOST, sUSER, sPASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
             include("logs/logsMail-1dir.php");
             exit();
         }
-        $db_selected = mysqli_select_db($connection, DB);
+        $db_selected = mysqli_select_db($connection, sDB);
         if (!$db_selected) {
             trigger_error("Could not reach database!<br/>");
             include("logs/logsMail-1dir.php");
@@ -56,6 +28,69 @@
         } 
         return $connection;
     }
+    
+    function insertConnectionString(){
+        //Permission to SELECT LOCK and INSERT
+        define("iHOST", "dublinscoffee.ie");
+        define("iUSER", "dubli653_INSERT");
+        define("iPASS", "Password1");
+        define("iDB", "dubli653_ncirl");
+        $connection = mysqli_connect(iHOST, iUSER, iPASS);
+        if (!$connection) {
+            trigger_error("Could not reach database!<br/>");
+            include("logs/logsMail-1dir.php");
+            exit();
+        }
+        $db_selected = mysqli_select_db($connection, iDB);
+        if (!$db_selected) {
+            trigger_error("Could not reach database!<br/>");
+            include("logs/logsMail-1dir.php");
+            exit();
+        } 
+        return $connection;
+    }
+    
+    function updateConnectionString(){
+        //Permission to SELECT LOCK and UPDATE
+        define("uHOST", "dublinscoffee.ie");
+        define("uUSER", "dubli653_UPDATE");
+        define("uPASS", "Password1");
+        define("uDB", "dubli653_ncirl");
+        $connection = mysqli_connect(uHOST, uUSER, uPASS);
+        if (!$connection) {
+            trigger_error("Could not reach database!<br/>");
+            include("logs/logsMail-1dir.php");
+            exit();
+        }
+        $db_selected = mysqli_select_db($connection, uDB);
+        if (!$db_selected) {
+            trigger_error("Could not reach database!<br/>");
+            include("logs/logsMail-1dir.php");
+            exit();
+        } 
+        return $connection;
+    }
+    
+    function deleteConnectionString(){
+        //Permission to SELECT LOCK and DELETE
+        define("dHOST", "dublinscoffee.ie");
+        define("dUSER", "dubli653_DELETE");
+        define("dPASS", "Password1");
+        define("dDB", "dubli653_ncirl");
+        $connection = mysqli_connect(dHOST, dUSER, dPASS);
+        if (!$connection) {
+            trigger_error("Could not reach database!<br/>");
+            include("logs/logsMail-1dir.php");
+            exit();
+        }
+        $db_selected = mysqli_select_db($connection, dDB);
+        if (!$db_selected) {
+            trigger_error("Could not reach database!<br/>");
+            include("logs/logsMail-1dir.php");
+            exit();
+        } 
+        return $connection;
+    }    
     
     /*
      *  --escape_data function strips text that is being sent to the DB of harmful tags and characters --
@@ -103,28 +138,24 @@
     }
     
     function select_query($select_query) {
-        selectConnectionCredentials();
-        $connection = connectionString();
+        $connection = selectConnectionString();
         $queryresult = mysqli_query($connection, $select_query); 
-        if (! $result){
-            echo('Database error: ' . mysqli_error());
+        if (! $queryresult){
+            echo('Database error: ' . mysqli_error($connection));
             exit;
         }
-        //echo "rows: " . $numRows . "<br>";
         mysqli_close($connection);
         return $queryresult;
     }
     
     function select_queryE($select_query,$expectedResult) {
-        selectConnectionCredentials();
-        $connection = connectionString();
+        $connection = selectConnectionString();
         mysqli_autocommit($connection,FALSE);
         mysqli_query($connection,"start transaction");
         $queryresult = mysqli_query($connection, $select_query); 
         $numRows = mysqli_affected_rows($connection);
-        echo $numRows;
-        if (! $result){
-            echo('Database error: ' . mysqli_error());
+        if (! $queryresult){
+            echo('Database error: ' . mysqli_error($connection));
             exit;
         }   
         if($numRows != $expectedResult){
@@ -138,8 +169,7 @@
     }
     
     function insert_query($insert_query) {
-        insertConnectionCredentials();
-        $connection = connectionString();
+        $connection = insertConnectionString();
         $queryresult = mysqli_query($connection, $insert_query) 
         or die(mysqli_error($connection));
         mysqli_close($connection);
@@ -148,8 +178,7 @@
     }
     
     function insert_queryE($insert_query, $table, $expectedResult) {
-        insertConnectionCredentials();
-        $connection = connectionString();
+        $connection = insertConnectionString();
         mysqli_autocommit($connection,FALSE);
         mysqli_query($connection,"start transaction"); 
         
@@ -181,8 +210,7 @@
     }
     
     function update_query($update_query){
-        updateConnectionCredentials();
-        $connection = connectionString();
+        $connection = updateConnectionString();
         $queryresult = mysqli_query($connection, $update_query)
         or die(mysqli_error($connection));
         mysqli_close($connection);
@@ -190,8 +218,7 @@
     }
     
     function update_queryE($update_query, $table, $expectedResult){
-        updateConnectionCredentials();
-        $connection = connectionString();
+        $connection = updateConnectionString();
         mysqli_query($connection,"start transaction");         
         
         $sql = "Select * FROM $table";
@@ -221,8 +248,7 @@
     }
     
     function delete_query($delete_query){
-        deleteConnectionCredentials();
-        $connection = connectionString();
+        $connection = deleteConnectionString();
         $queryresult = mysqli_query($connection, $delete_query)
         or die(mysqli_error($connection));
         mysqli_close($connection);
@@ -230,8 +256,7 @@
     }
     
     function delete_queryE($delete_query, $table, $expectedResult){
-        updateConnectionCredentials();
-        $connection = connectionString();
+        $connection = deleteConnectionString();
         mysqli_query($connection,"start transaction");         
         
         $sql = "Select * FROM $table";
@@ -251,14 +276,11 @@
                 
                 include("logs/logsMail.php");
                 mysqli_query($connection,"rollback");
-                echo "wrong rollback";
             }else{
                 mysqli_query($connection,"commit");
-                echo "wrong commited";
             }    
         }else{
             mysqli_query($connection,"commit");
-            echo "correct commited";
         }
         mysqli_close($connection);
         return $queryresult;
@@ -271,7 +293,7 @@
     // }
     
     /* SELECT EXACT */
-    // $result = select_queryE("SELECT * FROM testtable where value=101", 1);
+    // $result = select_queryE("SELECT * FROM testtable where value=101", 2);
     // while ($row = mysqli_fetch_assoc($result)) {
     //     echo $row['key'] . "<br>";
     // }
@@ -280,19 +302,20 @@
     //insert_query("INSERT INTO testtable (value) VALUES ('104')")
     
     /* INSERT Exact */
-    //insert_queryE("INSERT INTO testtable (value) VALUES ('104')","testtable",1);
+    //insert_queryE("INSERT INTO testtable (value) VALUES ('106')","testtable",1);
 
     /* UPDATE */
-    //update_query("UPDATE testtable SET value=105 WHERE value=104");
+    //update_query("UPDATE testtable SET value=105 WHERE value=106");
     
     /* UPDATE EXACT*/
-    //update_queryE("UPDATE testtable SET value=104 WHERE value=105","testtable",1);
+    //update_queryE("UPDATE testtable SET value=105 WHERE value=106","testtable",2);
     
     /* DELETE */
-    //delete_query("DELETE FROM testtable WHERE value=104");
+    //delete_query("DELETE FROM testtable WHERE value=106");
     
     /* DELETE EXACT*/
-    //delete_queryE("DELETE FROM testtable WHERE value=104","testtable",2);    
+    //if(delete_queryE("DELETE FROM testtable WHERE value=104","testtable",1));
+
     
     
     
