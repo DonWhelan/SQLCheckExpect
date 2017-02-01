@@ -13,11 +13,14 @@ select_sqli(string $select_query) - returns boolean $result from mysqli_connect(
 select_sqliLog(string $select_query,int $expectedResult) - returns boolean $result from mysqli_connect()
 select_sqliTransaction(string $select_query,int $expectedResult) - returns boolean $result from mysqli_connect()
 
-insert_query(string $insert_query) - returns boolean $result from mysqli_connect()
-insert_queryE(string $insert_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
+insert_sqli(string $insert_query) - returns boolean $result from mysqli_connect()
+insert_sqliLog(string $insert_query(string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
+insert_sqliTransaction(string $insert_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
 
-update_query(string $update_query) - returns boolean $result from mysqli_connect()
-update_queryE(string $update_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
+update_sqli(string $update_query) - returns boolean $result from mysqli_connect()
+update_sqliLog(string $update_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
+update_sqliTransaction(string $update_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
 
-delete_query(string $dlete_query) - returns boolean $result from mysqli_connect()
-delete_queryE(string $delete_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
+delete_sqli(string $dlete_query) - returns boolean $result from mysqli_connect()
+delete_sqliLog(string $delete_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
+delete_sqliTransaction(string $delete_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()

@@ -418,7 +418,42 @@
     // delete_queryE("DELETE FROM testtable WHERE value=104","testtable",1);
     
     
+    function select_prepared($valueToFind) {
+        $connection = selectConnectionString();
+
+        /* check connection */
+        if (mysqli_connect_errno()) {
+            printf("Connect failed: %s\n", mysqli_connect_error());
+            exit();
+        }
+        
+        //$valueToFind = 101;
+        
+        /* create a prepared statement */
+        if ($stmt = mysqli_prepare($connection, "SELECT * FROM testtable where value=?")) {
+        
+            /* bind parameters for markers */
+            mysqli_stmt_bind_param($stmt, "i", $valueToFind);
+        
+            /* execute query */
+            mysqli_stmt_execute($stmt);
+        
+            /* bind result variables */
+            mysqli_stmt_bind_result($stmt, $key, $value);
+        
+            /* fetch value */
+            mysqli_stmt_fetch($stmt);
+        
+            printf($value . " is in district " . $key);
+        
+            /* close statement */
+            mysqli_stmt_close($stmt);
+        }
+        
+        /* close connection */
+        mysqli_close($connection);
+    }
     
-    
+    select_prepared(101);
     
 ?>
