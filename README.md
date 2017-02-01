@@ -24,3 +24,4 @@ update_sqliTransaction(string $update_query,string $table,int $expectedResult) -
 delete_sqli(string $dlete_query) - returns boolean $result from mysqli_connect()
 delete_sqliLog(string $delete_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
 delete_sqliTransaction(string $delete_query,string $table,int $expectedResult) - returns boolean $result from mysqli_connect()
+
