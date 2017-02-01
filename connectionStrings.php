@@ -137,7 +137,7 @@
         return $ipaddress;
     }
     
-    function select_query($select_query) {
+    function select_sqli($select_query) {
         $connection = selectConnectionString();
         $queryresult = mysqli_query($connection, $select_query); 
         if (! $queryresult){
@@ -148,7 +148,22 @@
         return $queryresult;
     }
     
-    function select_queryE($select_query,$expectedResult) {
+    function select_sqliLog($select_query,$expectedResult) {
+        $connection = selectConnectionString();
+        $queryresult = mysqli_query($connection, $select_query); 
+        $numRows = mysqli_affected_rows($connection);
+        if (! $queryresult){
+            echo('Database error: ' . mysqli_error($connection));
+            exit;
+        }   
+        if($numRows != $expectedResult){
+            include("logs/logsMail.php");
+        }
+        mysqli_close($connection);
+        return $queryresult;
+    }
+    
+    function select_sqliTransaction($select_query,$expectedResult) {
         $connection = selectConnectionString();
         mysqli_autocommit($connection,FALSE);
         mysqli_query($connection,"start transaction");
@@ -168,7 +183,7 @@
         return $queryresult;
     }
     
-    function insert_query($insert_query) {
+    function insert_sqli($insert_query) {
         $connection = insertConnectionString();
         $queryresult = mysqli_query($connection, $insert_query) 
         or die(mysqli_error($connection));
@@ -177,7 +192,29 @@
 
     }
     
-    function insert_queryE($insert_query, $table, $expectedResult) {
+    function insert_sqliLog($insert_query, $table, $expectedResult) {
+        $connection = insertConnectionString();
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsBefore = mysqli_num_rows($result);
+        
+        $queryresult = mysqli_query($connection, $insert_query) 
+        or die(mysqli_error($connection));
+        $affectedRows = mysqli_affected_rows($connection);
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsAfter = mysqli_num_rows($result);
+         
+        if($rowsBefore != ($rowsAfter-$expectedResult) || $affectedRows != $expectedResult){
+            include("logs/logsMail.php");
+        }
+        mysqli_close($connection);
+        return $queryresult;
+    }
+    
+    function insert_sqliTransaction($insert_query, $table, $expectedResult) {
         $connection = insertConnectionString();
         mysqli_autocommit($connection,FALSE);
         mysqli_query($connection,"start transaction"); 
@@ -193,11 +230,6 @@
         $sql = "Select * FROM $table";
         $result = mysqli_query($connection,$sql); 
         $rowsAfter = mysqli_num_rows($result);
-
-        /*
-         * if anything other than $expectedResult rows being added happens 
-         * we log a security incedent and email alert the admin, and rollback the previous transaction
-         */
          
         if($rowsBefore != ($rowsAfter-$expectedResult) || $affectedRows != $expectedResult){
             include("logs/logsMail.php");
@@ -209,7 +241,7 @@
         return $queryresult;
     }
     
-    function update_query($update_query){
+    function update_sqli($update_query){
         $connection = updateConnectionString();
         $queryresult = mysqli_query($connection, $update_query)
         or die(mysqli_error($connection));
@@ -217,8 +249,33 @@
         return $queryresult;
     }
     
-    function update_queryE($update_query, $table, $expectedResult){
+    function update_sqliLog($update_query, $table, $expectedResult){
         $connection = updateConnectionString();
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsBefore = mysqli_num_rows($result);
+        
+        $queryresult = mysqli_query($connection, $update_query) 
+        or die(mysqli_error($connection));
+        $affectedRows = mysqli_affected_rows($connection);
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsAfter = mysqli_num_rows($result);
+        
+        if(($rowsBefore != $rowsAfter) || ($affectedRows != $expectedResult)){
+            if($affectedRows != 0){
+                include("logs/logsMail.php");
+            }   
+        }
+        mysqli_close($connection);
+        return $queryresult;
+    }
+    
+    function update_sqliTransaction($update_query, $table, $expectedResult){
+        $connection = updateConnectionString();
+        mysqli_autocommit($connection,FALSE);
         mysqli_query($connection,"start transaction");         
         
         $sql = "Select * FROM $table";
@@ -245,9 +302,9 @@
         }
         mysqli_close($connection);
         return $queryresult;
-    }
+    }    
     
-    function delete_query($delete_query){
+    function delete_sqli($delete_query){
         $connection = deleteConnectionString();
         $queryresult = mysqli_query($connection, $delete_query)
         or die(mysqli_error($connection));
@@ -255,8 +312,33 @@
         return $queryresult;
     }
     
-    function delete_queryE($delete_query, $table, $expectedResult){
+    function delete_sqliLog($delete_query, $table, $expectedResult){
         $connection = deleteConnectionString();
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsBefore = mysqli_num_rows($result);
+        
+        $queryresult = mysqli_query($connection, $delete_query) 
+        or die(mysqli_error($connection));
+        $affectedRows = mysqli_affected_rows($connection);
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsAfter = mysqli_num_rows($result);
+        
+        if(($rowsBefore != ($rowsAfter + $expectedResult)) || ($affectedRows != $expectedResult)){
+            if($affectedRows != 0){
+                include("logs/logsMail.php");
+            }    
+        }
+        mysqli_close($connection);
+        return $queryresult;
+    }
+    
+    function delete_sqliTransaction($delete_query, $table, $expectedResult){
+        $connection = deleteConnectionString();
+        mysqli_autocommit($connection,FALSE);
         mysqli_query($connection,"start transaction");         
         
         $sql = "Select * FROM $table";
@@ -273,7 +355,6 @@
         
         if(($rowsBefore != ($rowsAfter + $expectedResult)) || ($affectedRows != $expectedResult)){
             if($affectedRows != 0){
-                
                 include("logs/logsMail.php");
                 mysqli_query($connection,"rollback");
             }else{
@@ -286,36 +367,55 @@
         return $queryresult;
     }
     
-    /* SELECT */
-    // $result = select_query("SELECT * FROM testtable where value=101");
+    /* ---------------------  SELECT  ---------------------------------*/
+    // ------- select_sqli()
+    // $result = select_sqli("SELECT * FROM testtable where value=101");
     // while ($row = mysqli_fetch_assoc($result)) {
-    //     echo "key = " . $row['key'] . "<br>";
+    //     echo $row['key'] . "<br>";
     // }
     
-    /* SELECT EXACT */
-    // $result = select_queryE("SELECT * FROM testtable where value=101", 2);
+    // ------- select_sqliLog()
+    // $result = select_sqliLog("SELECT * FROM testtable where value=101", 2);
+    // while ($row = mysqli_fetch_assoc($result)) {
+    //     echo $row['key'] . "<br>";
+    // }
+    
+    // ------- select_sqliTransaction()
+    // $result = select_sqliTransaction("SELECT * FROM testtable where value=101", 2);
     // while ($row = mysqli_fetch_assoc($result)) {
     //     echo $row['key'] . "<br>";
     // }
 
-    /* INSERT */
-    //insert_query("INSERT INTO testtable (value) VALUES ('104')")
+    /* ---------------------  INSERT  ---------------------------------*/
+    // ------ insert_sqli()
+    // insert_sqli("INSERT INTO testtable (value) VALUES ('1001')");
     
-    /* INSERT Exact */
-    //insert_queryE("INSERT INTO testtable (value) VALUES ('106')","testtable",1);
+    // ------ insert_sqliLog()
+     //insert_sqliLog("INSERT INTO testtable (value) VALUES ('1002')","testtable",2);
 
-    /* UPDATE */
-    //update_query("UPDATE testtable SET value=105 WHERE value=106");
+    // ------ insert_sqliTransaction()
+     //insert_sqliTransaction("INSERT INTO testtable (value) VALUES ('1003')","testtable",2);
     
-    /* UPDATE EXACT*/
-    //update_queryE("UPDATE testtable SET value=105 WHERE value=106","testtable",2);
     
-    /* DELETE */
-    //delete_query("DELETE FROM testtable WHERE value=106");
+    /* ---------------------  UPDATE  ---------------------------------*/
+    // ------ update_sqli()    
+    // update_query("UPDATE testtable SET value=105 WHERE value=106");
     
-    /* DELETE EXACT*/
-    //if(delete_queryE("DELETE FROM testtable WHERE value=104","testtable",1));
+    // ------ update_sqliLog()  
+    // update_queryE("UPDATE testtable SET value=105 WHERE value=106","testtable",1);
+    
+    // ------ update_sqliTransaction() 
+    // update_queryE("UPDATE testtable SET value=105 WHERE value=106","testtable",1);
+    
+    /* ---------------------  Delete  ---------------------------------*/   
+    // ------ delete_sqli()  
+    // delete_query("DELETE FROM testtable WHERE value=106");
+    
+    // ------ delete_sqliLog()  
+    // delete_queryE("DELETE FROM testtable WHERE value=104","testtable",1);
 
+    // ------ delete_sqliTransaction()  
+    // delete_queryE("DELETE FROM testtable WHERE value=104","testtable",1);
     
     
     
