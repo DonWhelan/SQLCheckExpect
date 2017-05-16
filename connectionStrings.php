@@ -136,6 +136,21 @@
         return $queryresult;
     }
     
+    function select_sqliLogMax($select_query,$maxResult) {
+        $connection = selectConnectionString();
+        $queryresult = mysqli_query($connection, $select_query); 
+        $numRows = mysqli_affected_rows($connection);
+        if (! $queryresult){
+            echo('Database error: ' . mysqli_error($connection));
+            exit;
+        }   
+        if($numRows > $maxResult){
+            include("logs/logsMail.php");
+        }
+        mysqli_close($connection);
+        return $queryresult;
+    }
+    
     function select_sqliTransaction($select_query,$expectedResult) {
         $connection = selectConnectionString();
         mysqli_autocommit($connection,FALSE);
@@ -163,6 +178,28 @@
         mysqli_close($connection);
         return $queryresult;
 
+    }
+    
+    function insert_sqliLog($insert_query, $table, $expectedResult) {
+        $connection = insertConnectionString();
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsBefore = mysqli_num_rows($result);
+        
+        $queryresult = mysqli_query($connection, $insert_query) 
+        or die(mysqli_error($connection));
+        $affectedRows = mysqli_affected_rows($connection);
+        
+        $sql = "Select * FROM $table";
+        $result = mysqli_query($connection,$sql); 
+        $rowsAfter = mysqli_num_rows($result);
+         
+        if($rowsBefore != ($rowsAfter-$expectedResult) || $affectedRows != $expectedResult){
+            include("logs/logsMail.php");
+        }
+        mysqli_close($connection);
+        return $queryresult;
     }
     
     function insert_sqliLog($insert_query, $table, $expectedResult) {

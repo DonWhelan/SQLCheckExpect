@@ -8,7 +8,12 @@
      * ------------------------------------------------------------------------------------------------------------------------
      */
     
-    
+   /* 
+    * mysql db engine must be set to innodb and not myisam as myisam does not have transactionality enabled
+    * Referances:
+    * https://dev.mysql.com/doc/refman/5.7/en/myisam-storage-engine.html
+    * https://dev.mysql.com/doc/refman/5.7/en/innodb-introduction.html
+    */
     
     /* - CONNECTION STRINGS - 
      * DB details are defined as constants rather than variables, to stop values from being altered.
@@ -475,7 +480,7 @@
         $connection = selectConnectionString();
 
         /* check connection */
-        if (mysqli_connect_errno()) {
+        if (mysqli_connect_errno($connection)) {
             printf("Connect failed: %s\n", mysqli_connect_error());
             exit();
         }
@@ -484,20 +489,20 @@
         
         /* create a prepared statement */
         if ($stmt = mysqli_prepare($connection, "SELECT * FROM testtable where value=?")) {
-        
+      
             /* bind parameters for markers */
             mysqli_stmt_bind_param($stmt, "i", $valueToFind);
         
             /* execute query */
             mysqli_stmt_execute($stmt);
-        
+
             /* bind result variables */
             mysqli_stmt_bind_result($stmt, $key, $value);
         
             /* fetch value */
             mysqli_stmt_fetch($stmt);
         
-            printf($value . " is in district " . $key);
+            echo "key: " . $key . " - value: " . $value;
         
             /* close statement */
             mysqli_stmt_close($stmt);
@@ -506,4 +511,8 @@
         /* close connection */
         mysqli_close($connection);
     }
+    
+    //select_prepared(102);
+    
+   
 ?>

@@ -1,6 +1,6 @@
 <?php
 
-    include("conn2.php");
+    include("connectionStrings.php");
     
 
 /* ---------------------  SELECT  ---------------------------------*/
@@ -15,6 +15,12 @@
     // while ($row = mysqli_fetch_assoc($result)) {
     //     echo $row['key'] . "<br>";
     // }
+    
+    // ------- select_sqliLogMax()
+    $result = select_sqliLogMax("SELECT * FROM testtable where value=1002", 2);
+    while ($row = mysqli_fetch_assoc($result)) {
+        echo $row['key'] . "<br>";
+    }
     
     // ------- select_sqliTransaction()
     // $result = select_sqliTransaction("SELECT * FROM testtable where value=101", 2);
