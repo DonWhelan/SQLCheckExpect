@@ -31,10 +31,10 @@
     
     // selectConnectionString() only has SELECT and LOCK permission on its account on the MYSQL Server.
     function selectConnectionString(){
-        define("sHOST", "dublinscoffee.ie");
-        define("sUSER", "dubli653_SELECT");
-        define("sPASS", "Password1");
-        define("sDB", "dubli653_ncirl");
+        define("sHOST", "HOST");
+        define("sUSER", "sUSER");
+        define("sPASS", "sPASS");
+        define("sDB", "sDB");
         $connection = mysqli_connect(sHOST, sUSER, sPASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
@@ -52,10 +52,10 @@
     
     // insertConnectionString() only has SELECT INSERT and LOCK permission on its account on the MYSQL Server.    
     function insertConnectionString(){
-        define("iHOST", "dublinscoffee.ie");
-        define("iUSER", "dubli653_INSERT");
-        define("iPASS", "Password1");
-        define("iDB", "dubli653_ncirl");
+        define("iHOST", "iHOST.ie");
+        define("iUSER", "iUSER");
+        define("iPASS", "iPASS");
+        define("iDB", "iDB");
         $connection = mysqli_connect(iHOST, iUSER, iPASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
@@ -73,10 +73,10 @@
     
     // updateConnectionString() only has SELECT UPDATE and LOCK permission on its account on the MYSQL Server.  
     function updateConnectionString(){
-        define("uHOST", "dublinscoffee.ie");
-        define("uUSER", "dubli653_UPDATE");
-        define("uPASS", "Password1");
-        define("uDB", "dubli653_ncirl");
+        define("uHOST", "uHOST.ie");
+        define("uUSER", "uUSER");
+        define("uPASS", "uPASS");
+        define("uDB", "uDB");
         $connection = mysqli_connect(uHOST, uUSER, uPASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
@@ -94,10 +94,10 @@
     
     // deleteConnectionString() only has SELECT DELETE and LOCK permission on its account on the MYSQL Server.      
     function deleteConnectionString(){
-        define("dHOST", "dublinscoffee.ie");
-        define("dUSER", "dubli653_DELETE");
-        define("dPASS", "Password1");
-        define("dDB", "dubli653_ncirl");
+        define("dHOST", "dHOST.ie");
+        define("dUSER", "dUSER");
+        define("dPASS", "dPASS");
+        define("dDB", "dDB");
         $connection = mysqli_connect(dHOST, dUSER, dPASS);
         if (!$connection) {
             trigger_error("Could not reach database!<br/>");
